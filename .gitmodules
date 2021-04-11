@@ -1,0 +1,12 @@
+[submodule "thirdparty/SuperPoint_SLAM"]
+	path = thirdparty/SuperPoint_SLAM
+	url = git@github.com:specarmi/SuperPoint_SLAM.git
+[submodule "thirdparty/ORB_SLAM2"]
+	path = thirdparty/ORB_SLAM2
+	url = git@github.com:specarmi/ORB_SLAM2.git
+[submodule "thirdparty/DBoW2"]
+	path = thirdparty/DBoW2
+	url = git@github.com:specarmi/DBoW2.git
+[submodule "thirdparty/pytorch-superpoint"]
+	path = thirdparty/pytorch-superpoint
+	url = git@github.com:specarmi/pytorch-superpoint.git
