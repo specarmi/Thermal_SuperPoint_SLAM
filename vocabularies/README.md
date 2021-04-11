@@ -1,0 +1,2 @@
+The authors of the original SuperPoint_SLAM repo trained a vocabulary for RGB SuperPoint features. The vocabulary exceeds github's filesize limit (100 MB) and cannot be included here. The authors of the original SuperPoint_SLAM repo have provided a Google Drive link:
+https://drive.google.com/file/d/1p1QEXTDYsbpid5ELp3IApQ8PGgm_vguC/view
