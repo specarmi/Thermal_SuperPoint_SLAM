@@ -21,6 +21,8 @@ parser.add_argument('--timestamps-only', action='store_true',
 parser.add_argument('--apply-clahe', action='store_true',
     help='Apply CLAHE, if False the raw 16 bit image is saved, if True CLAHE is applied and an 8 bit image is saved '
          '(default: False)')
+parser.add_argument('--apply-median-blur', action='store_true',
+    help='Apply median blur to the image (default: False)')
 parser.add_argument('--clip-limit', type=float, default=100, help='CLAHE clip limit (default: 100).')
 parser.add_argument('--tile-grid-size', type=int, default=8, help='CLAHE square tile grid sidelength (defualt: 8).')
 opt = parser.parse_args()
@@ -104,6 +106,10 @@ for topic, msg, t in bag.read_messages(opt.image_topic):
                     # If the image is a raw cooled camera image, remove the first row that contains unknown extra info
                     if is_cooled:
                         cv_image = cv_image[1:, :]
+
+                    # Apply median blur if enabled
+                    if opt.apply_median_blur:
+                        cv_image = cv2.medianBlur(cv_image, 5)
 
                     # Apply CLAHE if enabled
                     if opt.apply_clahe:
