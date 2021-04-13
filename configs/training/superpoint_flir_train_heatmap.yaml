@@ -2,7 +2,7 @@ data:
     # name: 'coco'
     dataset: 'FLIR_ADAS' # 'coco'
 
-    labels: logs/magicpoint_synth_flir_clahe/predictions
+    labels: logs/magicpoint_synth/predictions
 
     gaussian_label:
         enable: true
@@ -12,7 +12,7 @@ data:
 
     cache_in_memory: false
     preprocessing:
-        resize: [256, 320]
+        resize: [256, 320] #[height, width]
     augmentation:
         photometric:
             enable: true

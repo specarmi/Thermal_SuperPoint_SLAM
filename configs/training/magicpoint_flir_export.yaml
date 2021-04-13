@@ -1,8 +1,8 @@
 data:
     dataset: 'FLIR_ADAS'  # 'coco' 'hpatches'
-    export_folder: 'val' # train, val
+    export_folder: 'train' # train, val
     preprocessing:
-        resize: [256, 320]
+        resize: [256, 320] #[height, width]
     gaussian_label:
         enable: false # false
         sigma: 1.
@@ -43,6 +43,6 @@ model:
         enable: true
 
 # pretrained: 'logs/magicpoint_synth20/checkpoints/superPointNet_200000_checkpoint.pth.tar' # 'SuperPointNet'
-pretrained: 'logs/magicpoint_synth_t2/checkpoints/superPointNet_100000_checkpoint.pth.tar'
+pretrained: 'trained_models/magicpoint/magicpoint.pth.tar'
 
 
