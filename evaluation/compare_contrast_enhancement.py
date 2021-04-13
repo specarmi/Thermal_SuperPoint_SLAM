@@ -9,10 +9,8 @@ parser = argparse.ArgumentParser(description='Reads in ROS image messages and di
     'enhancement techniques.')
 parser.add_argument('bag_path', type=str, help='Path to ROS bag.')
 parser.add_argument('image_topic', type=str, help='Image topic.')
-parser.add_argument('-f1', type=int, default=0, 
-    help='The first frame to process (default: 0).')
-parser.add_argument('-f2', type=int, default=1, 
-    help='The second frame to process (default: 10).')
+parser.add_argument('-f', type=int, default=0, 
+    help='The frame to process (default: 0).')
 opt = parser.parse_args()
 
 # Import the ROS bag
@@ -30,21 +28,15 @@ print('Processing messages...')
 bridge = CvBridge()
 frame_count = 0
 is_cooled = opt.image_topic == '/t2sls/image_raw'
-clip_limits = [1, 100, 1000, 100]
-tile_grid_sizes = [8, 8, 8, 32]
-img_fig, img_axes = plt.subplots(2, len(clip_limits) + 2)
+clip_limits = [100]
+tile_grid_sizes = [8]
+img_fig, img_axes = plt.subplots(2, len(clip_limits) + 3)
 f1_processed = f2_processed = False
 for topic, msg, t in bag.read_messages(opt.image_topic):
-    # Determine if the current message if one to process
+    # Determine if the current message is the one to process
     process = False
-    if frame_count == opt.f1:
+    if frame_count == opt.f:
         process = True
-        frame = 0
-        f1_processed = True
-    elif frame_count == opt.f2:
-        process = True
-        frame  = 1
-        f2_processed = True
     
     if process:
         # Convert the image message to an OpenCV image
@@ -54,36 +46,55 @@ for topic, msg, t in bag.read_messages(opt.image_topic):
         if is_cooled:
             cv_image = cv_image[1:, :]
 
+        # Direct conversion to 8 bit with no normalization
+        output_image = (cv_image / 257).astype('uint8')
+        img_axes[0, 0].imshow(output_image, cmap='gray', vmin=0, vmax=255)
+        img_axes[0, 0].set_title('Direct Conversion')
+        img_axes[0, 0].set_xticks([], [])
+        img_axes[0, 0].set_yticks([], [])
+        output_image[0, 0] = 200 # Dummy value to procude proper plot
+        img_axes[1, 0].hist(output_image.flatten(), 32)
+        img_axes[1, 0].set_xlim(0, 255)
+        img_axes[1, 0].set_yticks([], [])
+
         # Apply normalization alone
         output_image = cv2.normalize(cv_image, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8UC1)
-        img_axes[frame, 0].imshow(output_image, cmap='gray', vmin=0, vmax=255)
-        img_axes[frame, 0].set_title('Normalization')
-        img_axes[frame, 0].set_xticks([], [])
-        img_axes[frame, 0].set_yticks([], [])
+        img_axes[0, 1].imshow(output_image, cmap='gray', vmin=0, vmax=255)
+        img_axes[0, 1].set_title('Normalization')
+        img_axes[0, 1].set_xticks([], [])
+        img_axes[0, 1].set_yticks([], [])
+        img_axes[1, 1].hist(output_image.flatten(), 32)
+        img_axes[1, 1].set_xlim(0, 255)
+        img_axes[1, 1].set_yticks([], [])
 
         # Apply global histogram equalization
         norm_image = cv2.normalize(cv_image, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8UC1)
         output_image = cv2.equalizeHist(norm_image)
-        img_axes[frame, 1].imshow(output_image, cmap='gray', vmin=0, vmax=255)
-        img_axes[frame, 1].set_title('Global Hist. Equalization')
-        img_axes[frame, 1].set_xticks([], [])
-        img_axes[frame, 1].set_yticks([], [])
+        img_axes[0, 2].imshow(output_image, cmap='gray', vmin=0, vmax=255)
+        img_axes[0, 2].set_title('Global Hist. Equalization')
+        img_axes[0, 2].set_xticks([], [])
+        img_axes[0, 2].set_yticks([], [])
+        img_axes[1, 2].hist(output_image.flatten(), 32)
+        img_axes[1, 2].set_xlim(0, 255)
+        img_axes[1, 2].set_yticks([], [])
         
         # Apply CLAHE with various settings to the image
         for i in range(len(clip_limits)):
             clahe = cv2.createCLAHE(clip_limits[i], (tile_grid_sizes[i], tile_grid_sizes[i]))
             clahe_image = clahe.apply(cv_image)
             output_image = cv2.normalize(clahe_image, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8UC1)
-            img_axes[frame, i + 2].imshow(output_image, cmap='gray', vmin=0, vmax=255)
-            img_axes[frame, i + 2].set_title('CLAHE: CL ' + str(clip_limits[i]) + 
+            img_axes[0, i + 3].imshow(output_image, cmap='gray', vmin=0, vmax=255)
+            img_axes[0, i + 3].set_title('CLAHE: CL ' + str(clip_limits[i]) + 
                 ', TGS ' + str(tile_grid_sizes[i]) + 'x' + str(tile_grid_sizes[i]))
-            img_axes[frame, i + 2].set_xticks([], [])
-            img_axes[frame, i + 2].set_yticks([], [])
+            img_axes[0, i + 3].set_xticks([], [])
+            img_axes[0, i + 3].set_yticks([], [])
+            img_axes[1, i + 3].hist(output_image.flatten(), 32)
+            img_axes[1, i + 3].set_xlim(0, 255)
+            img_axes[1, i + 3].set_yticks([], [])
+
+        break
     
     # Update frame counter
     frame_count += 1
-
-    if f1_processed and f2_processed:
-        break
 
 plt.show()
