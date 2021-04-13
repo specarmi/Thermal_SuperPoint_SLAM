@@ -5,7 +5,7 @@ import argparse
 from cv_bridge import CvBridge, CvBridgeError
 from PIL import Image
 
-parser = argparse.ArgumentParser(description='Generates a ROS image messages with CLAHE applied.')
+parser = argparse.ArgumentParser(description='Generates a GIF of ROS image messages with CLAHE applied.')
 parser.add_argument('bag_path', type=str, help='Path to ROS bag.')
 parser.add_argument('image_topic', type=str, help='Image topic.')
 parser.add_argument('out_file', type=str, 
