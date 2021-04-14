@@ -1,6 +1,6 @@
 # Thermal SuperPoint SLAM
 
-Thermal SuperPoint SLAM is a project completed for ROB 530 at the University of Michigan in the winter 2021 semester. This project aimed to create an indirect SLAM algorithm that can successfully perform on thermal imagery. Specifically, we trained a SuperPoint feature detection and description network on thermal imagery and integrated the network with ORB_SLAM2 in place of the ORB feature detector and descriptor. Our combined algorithm runs offline on precomputed keypoints and descriptors. See our report for the details of the process and our results. Although the project was completed with thermal imagery in mind, the steps described here can be followed with any set of images to yield a SuperPoint network and corresponding vocabulary and use them within a modified version of ORB_SLAM2.
+Thermal SuperPoint SLAM is a project completed for ROB 530 at the University of Michigan in the winter 2021 semester. This project aimed to create an indirect SLAM algorithm that can successfully perform on thermal imagery. Specifically, we trained a SuperPoint feature detection and description network on thermal imagery and integrated the network with ORB_SLAM2 in place of the ORB feature detector and descriptor. Our combined algorithm runs offline on precomputed keypoints and descriptors. See our video and report for the details of the process and our results. Although the project was completed with thermal imagery in mind, the steps described here can be followed with any set of images to yield a SuperPoint network and corresponding vocabulary and use them within a modified version of ORB_SLAM2.
 
 This project utilizes four existing codebases:
 - SuperPoint Training: https://github.com/eric-yyjau/pytorch-superpoint
@@ -60,11 +60,11 @@ chmod +x build_slam_code.sh
 
 ## Preprocessing and Evaluation (*utils/* and *evaluation/*)
 
-Any of these scripts that do not work with ROS bags can be run using the pytorch-superpoint environment (see the section SuperPoint Training above). The scripts that work with ROS bags require ROS to be installed (and were tested with [ROS melodic](http://wiki.ros.org/melodic/Installation)) and we have also found that these scripts do not work within conda environments.
+Any of these scripts that do not work with ROS bags can be run using the pytorch-superpoint environment (see the section SuperPoint Training above). The scripts that work with ROS bags require ROS to be installed (and were tested with [ROS melodic](http://wiki.ros.org/melodic/Installation)) and we have also found that these scripts do not work within conda environments. The scripts that create GIFs additionally require PIL which can be installed with `pip install Pillow`.
 
 # 2. Image Directory Preprocessing
 
-This section explains how to apply contrast limited adaptive histogram equalization (CLAHE) to an image directory containing 16 bit thermal images. This is a step we took for training our thermal SuperPoint network but it is not necessary for training on RGB images. See our report for more details.
+This section explains how to apply contrast limited adaptive histogram equalization (CLAHE) to an image directory containing 16 bit thermal images. This is a step we took for training our thermal SuperPoint network but it is not necessary for training on RGB images. See our video and report for more details.
 
 The script `utils/image_directory_preprocessor.py` is provided to apply CLAHE to an image directory and write the results to a new directory. See the script's help message for the full details.
 
@@ -144,10 +144,53 @@ For example:
 ./thirdparty/SuperPoint_SLAM/Examples/Monocular/mono_euroc vocabularies/superpt_thermal.yml.gz configs/ORB_SLAM2/ViViD_Thermal.yaml ../datasets/vivid/outdoor_thermal/images_clahe_10hz_tstart_0_tstop_inf/ ../datasets/vivid/outdoor_thermal/timestamps/timestamps_10hz_tstart_0_tstop_inf.txt ../datasets/vivid/outdoor_thermal/features/
 ```
 
-# 8. Evaluation and Results
-**TODO** Write section
+# 8. Evaluation
+
+This section gives the commands used to generate the results shown in our video and report.
+
 ## Comparing Contrast Enhancement Techniques
+Contrast enhancement comparison figure:
+```
+python compare_contrast_enhancement.py ../../datasets/fcav/cadata_sequence.bag /ubol/image_raw -f 50
+```
+CLAHE GIF:
+```
+python generate_clahe_gif.py ../../datasets/fcav/cadata_sequence.bag /ubol/image_raw clahe --frame-rate-divisor 10 --time-start 20 --time-stop 30
+```
+
 ## Feature Matching 
+
+Feature tracking GIF:
+```
+python generate_tracking_gif.py ../trained_networks/superpoint_rgb/rgb.pth.tar ../trained_networks/superpoint_thermal/thermal.pth.tar ../../datasets/fcav/uncooled_seq_1/images_clahe_10hz_tstart_90_tstop_110/ tracking 10
+```
 ## Vocabulary Image Similarity Scoring
-## Localization
-**TODO**: Mention running original ORB_SLAM2, running SuperPoint_SLAM on RGB images with RGB vocab, and (if added) how to quantitatively evaluate performance.
+Image similarity scores using thermal SuperPoint features and the thermal SuperPoint vocabulary:
+```
+./thirdparty/DBoW2/build/test_vocab thirdparty/DBoW2/Selection_Keypts_and_Desc/ vocabularies/superpt_thermal.yml.gz 
+```
+Image similarity scores using thermal SuperPoint features and the RGB SuperPoint vocabulary:
+```
+./thirdparty/DBoW2/build/test_vocab thirdparty/DBoW2/Selection_Keypts_and_Desc/ vocabularies/superpoint_rgb.yml.gz 
+```
+Image similarity scores using ORB features and the ORB vocabulary:
+```
+./thirdparty/ORB_SLAM2/Examples/Monocular/test_vocab thirdparty/DBoW2/ORB_Keypts_and_Desc/ vocabularies/ORBvoc.txt 
+```
+## SLAM Recordings
+RGB SuperPoint SLAM run on KITTI sequence 03:
+```
+./thirdparty/SuperPoint_SLAM/Examples/Monocular/mono_kitti vocabularies/superpoint_rgb.yml.gz thirdparty/SuperPoint_SLAM/Examples/Monocular/KITTI03.yaml ../datasets/kitti/data_odometry_gray/dataset/sequences/03/ ../datasets/kitti/data_odometry_gray/dataset/sequences/03/RGB_Feat_and_Descriptors/
+```
+ORB_SLAM2 run on KITTI sequence 03:
+```
+./thirdparty/ORB_SLAM2/Examples/Monocular/mono_kitti vocabularies/ORBvoc.txt thirdparty/ORB_SLAM2/Examples/Monocular/KITTI03.yaml ../datasets/kitti/data_odometry_gray/dataset/sequences/03/
+```
+Thermal SuperPoint SLAM run on thermal images:
+```
+./thirdparty/SuperPoint_SLAM/Examples/Monocular/mono_euroc vocabularies/superpt_thermal.yml.gz configs/ORB_SLAM2/X8500.yaml ../datasets/fcav/cooled/images_clahe_10hz_tstart_108_tstop_inf/ ../datasets/fcav/cooled/timestamps/timestamps_10hz_tstart_108_tstop_inf.txt ../datasets/fcav/cooled/features/
+```
+ORB_SLAM2 run on thermal images:
+```
+./thirdparty/ORB_SLAM2/Examples/Monocular/mono_euroc vocabularies/ORBvoc.txt configs/ORB_SLAM2/X8500.yaml ../datasets/fcav/cooled/images_clahe_10hz_tstart_108_tstop_inf/ ../datasets/fcav/cooled/timestamps/timestamps_10hz_tstart_108_tstop_inf.txt 
+```
