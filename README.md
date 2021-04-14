@@ -167,15 +167,23 @@ python generate_tracking_gif.py ../trained_networks/superpoint_thermal/thermal.p
 ## Vocabulary Image Similarity Scoring
 Image similarity scores using thermal SuperPoint features and the thermal SuperPoint vocabulary:
 ```
-./thirdparty/DBoW2/build/test_vocab thirdparty/DBoW2/Selection_Keypts_and_Desc/ vocabularies/superpt_thermal.yml.gz 
+./thirdparty/DBoW2/build/test_vocab thirdparty/DBoW2/test_vocab_data/SuperPoint_Thermal_Keypts_and_Desc/ vocabularies/superpt_thermal.yml.gz 
 ```
 Image similarity scores using thermal SuperPoint features and the RGB SuperPoint vocabulary:
 ```
-./thirdparty/DBoW2/build/test_vocab thirdparty/DBoW2/Selection_Keypts_and_Desc/ vocabularies/superpoint_rgb.yml.gz 
+./thirdparty/DBoW2/build/test_vocab thirdparty/DBoW2/test_vocab_data/SuperPoint_Thermal_Keypts_and_Desc/ vocabularies/superpoint_rgb.yml.gz 
+```
+Image similarity scores using RGB SuperPoint features and the RGB SuperPoint vocabulary:
+```
+./thirdparty/DBoW2/build/test_vocab thirdparty/DBoW2/test_vocab_data/SuperPoint_RGB_Keypts_and_Desc/ vocabularies/superpoint_rgb.yml.gz 
+```
+Image similarity scores using RGB SuperPoint features and the Thermal SuperPoint vocabulary:
+```
+./thirdparty/DBoW2/build/test_vocab thirdparty/DBoW2/test_vocab_data/SuperPoint_RGB_Keypts_and_Desc/ vocabularies/superpt_thermal.yml.gz
 ```
 Image similarity scores using ORB features and the ORB vocabulary:
 ```
-./thirdparty/ORB_SLAM2/Examples/Monocular/test_vocab thirdparty/DBoW2/ORB_Keypts_and_Desc/ vocabularies/ORBvoc.txt 
+./thirdparty/ORB_SLAM2/Examples/Monocular/test_vocab thirdparty/DBoW2/test_vocab_data/ORB_Keypts_and_Desc/ vocabularies/ORBvoc.txt 
 ```
 ## SLAM Recordings
 RGB SuperPoint SLAM run on KITTI sequence 03:
