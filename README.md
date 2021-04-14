@@ -12,7 +12,7 @@ Each codebase required modifications and the modified forks are included in the 
 
 # 1. Setup
 
-This library was tested on **Ubuntu 18.04**. After downloading the submodules the setup is divided into three task specific sections: SuperPoint training, vocabulary creation, and SLAM. Each task can be done independent of the others. Finally there are python requirements for our preprocessing and evaluation scripts.
+This library was tested on **Ubuntu 18.04**. After downloading the submodules the setup is divided into three task specific sections: SuperPoint training, vocabulary creation, and SLAM. Each task can be done independent of the others. Finally there are requirements for our preprocessing and evaluation scripts.
 
 ## Downloading Submodules
 
@@ -35,7 +35,7 @@ pip install -r requirements_torch.txt
 
 ## Vocabulary Generation (DBoW2)
 
-For training a SuperPoint vocabulary DBoW2 only requires [OpenCV](http://opencv.org)(C++). Download and install instructions can be found at: http://opencv.org.
+For training a SuperPoint vocabulary DBoW2 only requires [OpenCV](http://opencv.org) (C++). Download and install instructions can be found at: http://opencv.org.
 
 After installing OpenCV the DBoW2 code can be built by running the provided shell script:
 ```
@@ -60,63 +60,80 @@ chmod +x build_slam_code.sh
 
 ## Preprocessing and Evaluation (*utils/* and *evaluation/*)
 
-**TODO**: create a requirements.txt file for these python scripts. Can they be used without installing ROS?
+Any of these scripts that do not work with ROS bags can be run using the pytorch-superpoint environment (see the section SuperPoint Training above). The scripts that work with ROS bags require ROS to be installed (and were tested with [ROS melodic](http://wiki.ros.org/melodic/Installation)) and we have also found that these scripts do not work within conda environments.
 
 # 2. Image Directory Preprocessing
 
-This section explains how to apply contrast limited adaptive histogram equalization (CLAHE) to an image directory containing 16 bit thermal images. This is a step we took for training our thermal SuperPoint model but it is not necessary for training on RGB images. See our report for more details.
+This section explains how to apply contrast limited adaptive histogram equalization (CLAHE) to an image directory containing 16 bit thermal images. This is a step we took for training our thermal SuperPoint network but it is not necessary for training on RGB images. See our report for more details.
 
 The script `utils/image_directory_preprocessor.py` is provided to apply CLAHE to an image directory and write the results to a new directory. See the script's help message for the full details.
 
-An example of how to use this script on an image directory located at *../../datasets/FLIR_ADAS/train/Data/* relative to the *utils* folder is as follows:
+An example of how to use this script is as follows:
 ```
 python image_directory_preprocessor.py ../../datasets/FLIR_ADAS/train/Data/ Data_CLAHE
 ```
-This will apply CLAHE to each image in the source directory and output them to *../../datasets/FLIR_ADAS/train/Data_CLAHE/* as PNG images with the same filename.
+This will apply CLAHE to each image in the source directory and output them to *../../datasets/FLIR_ADAS/train/Data_CLAHE/* as PNG images with the same filenames.
 
 # 3. ROS Bag Preprocessing
 
-This section explains how to preprocess image messages in a ROS bag into a format suitable for ORB_SLAM2 and SuperPoint_SLAM (the direct ORB_SLAM2 ROS support has not been maintained here). The end result is a text file of timestamps and a folder of images with filenames corresponding to the timestamps. This is the same format ORB_SLAM2 uses for the EuRoC dataset.
+This section explains how to preprocess image messages in a ROS bag into a format suitable for ORB_SLAM2 and SuperPoint_SLAM. The end result is a text file of timestamps and a folder of images with filenames corresponding to the timestamps. This is the same format ORB_SLAM2 uses for the EuRoC dataset.
 
 The script `utils/rosbag_preprocessor.py` is provided for this purpose. See the script's help message for the full details.
 
-An example of how to use this script with a rosbag located in *../../datasets/vivid/outdoor_robust_day1.bag* is as follows:
+An example of how to use this script is as follows:
 ```
-python rosbag_preprocessor.py ../../datasets/vivid/outdoor_robust_day1.bag /rgb/image outdoor_rgb
+python rosbag_preprocessor.py ../../datasets/vivid/outdoor_robust_day1.bag /thermal/image_raw outdoor_thermal --apply-clahe
 ```
-This will output all images under the topic `/rgb/image` to the directory *../../datasets/vivid/outdoor_rgb/images_30hz_tstart_0_tstop_inf* and will output a text file containing the timestamps of each image to *../../datasets/vivid/outdoor_rgb/timestamps/timestamps_30hz_tstart_0_tstop_inf.txt*. Note that the framerate, start time, and stop time are denoted in the image folder name and the timestamp filename (in this example the original framerate has been assumed to be 30 Hz).
-
-When using ORB_SLAM2 or SuperPoint_SLAM (as described further down) only the images corresponding to the timestamps listed in the given timestamps file will be imported. Therefore, a different subset of images can be used without creating a new folder of images. Continuing with the previous example, if we want to use the same sequence but start it 30 seconds in and reduce it from 30 Hz to 10 Hz, we can generate a new timestamps file by running:
-```
-python rosbag_preprocessor.py ../../datasets/vivid/outdoor_robust_day1.bag /rgb/image outdoor_rgb --frame-rate-divisor 3 --time-start 30 --timestamps-only
-```
-The result is a new timestamps file *../../datasets/vivid/rgb_outdoor/timestamps/timestamps_10hz_tstart_30_tstop_inf.txt*.
-
-As mentioned in the previous section we trained our thermal SuperPoint model on images that we had applied CLAHE to and therefore CLAHE should be applied to images before they are used with the model. If the topic passed to `utils/rosbag_preprocessor.py` is 16 bit thermal imagery the `--apply-clahe` flag can be used to apply CLAHE and output 8 bit images. 
+This will output all images under the topic `/thermal/image_raw` to the directory *../../datasets/vivid/outdoor_thermal/images_30hz_tstart_0_tstop_inf* and will output a text file containing the timestamps of each image to *../../datasets/vivid/outdoor_thermal/timestamps/timestamps_30hz_tstart_0_tstop_inf.txt*. Note that the framerate, start time, and stop time are denoted in the image folder name and the timestamp filename (in this example the original framerate has been assumed to be 30 Hz). Note also the `--apply-clahe` flag used here. This flag indicates that the input messages are 16 bit images, that CLAHE should be applied, and the result should be stored as an 8 bit image. This is unnecessary for RGB images. 
 
 # 4. SuperPoint Training
 
-**TODO** Write this section
+Training SuperPoint requires three steps: 1) train a MagicPoint network on synthetic shapes 2) generate pseudo-groundtruth keypoint labels using the trained MagicPoint network through Homographic Adaptation 3) train a SuperPoint network with the pseudo-groundtruth keypoint labels.
 
-# 5. Vocabulary Generation
+We used an existing trained MagicPoint network included in the original pytorch-superpoint repository instead of training one ourselves; see that repository for details on training a MagicPoint network. The MagicPoint network we used is now located at `trained_networks/magicpoint/magicpoint.pth.tar`.
 
-**TODO** Write this section
+Generating pseudo-groundtruth interest points can be done by making some modifications and running:
+```
+python thirdparty/pytorch-superpoint/export.py export_detector_homoAdapt configs/training/magicpoint_flir_export.yaml magicpoint_synth
+```
 
-# 6. Running SuperPoint SLAM
+Specifically `DATA_PATH` in [settings.py](https://github.com/specarmi/pytorch-superpoint/blob/master/settings.py) and [this](https://github.com/specarmi/pytorch-superpoint/blob/2aae5572ff8066f464d917eeb1884983af3ea7ae/datasets/FLIR_ADAS.py#L57) line in `FLIR_ADAS.py` need to be modified for images to be imported. Note that in `FLIR_ADAS.py` the input `task` will be set to the `export_folder` given in the config file `configs/training/magicpoint_flir_export.yaml`. The parameter `export_folder` can be set to either 'train' or 'val' and the image dataset used must be split into training and validation sets that are imported according to the corresponding setting for `export_folder`. The above command must be run twice, once with `export_folder` set to 'train' and once with it set to 'val'. The resulting pseudo-groundtruth keypoints will be stored in *logs/magicpoint_synth/predictions/train* and *logs/magicpoint_synth/predictions/val*. The config file includes many other parameters that can optionally be changed. Note that resized dimensions of the input images should be divisible by eight.
 
-Our modified version of SuperPoint SLAM runs offline on precomputed keypoints and descriptors. The original SuperPoint SLAM could be run online but utilized the pretrained SuperPoint model provided by the original SuperPoint authors [here](https://github.com/magicleap/SuperPointPretrainedNetwork). The third party implementation we use for training employs different layers in the neural network and our trained models are incompatible with the original SuperPoint_SLAM as a result. Our quick fix is to generate keypoints and descriptors offline and import them into SuperPoint_SLAM at runtime.  
+After generating the pseudo-groundtruth keypoints the SuperPoint network can be trained by running:
+```
+python thirdparty/pytorch-superpoint/train4.py train_joint configs/training superpoint_flir_train_heatmap.yaml superpoint
+```
+The result is a series of checkpoints of the network saved to *logs/superpoint/checkpoints/*. Once again the config file includes many parameters that can optionally be changed.
 
-## SuperPoint Keypoint and Descriptor Generation
+`trained_networks/superpoint_thermal/thermal.pth.tar` is our thermal SuperPoint network trained on the [FLIR ADAS dataset](https://www.flir.com/oem/adas/adas-dataset-form/).
+
+# 5. SuperPoint Keypoint and Descriptor Generation
+
+Applying the SuperPoint network trained using pytorch-superpoint to an image in C++ would require porting over a significant amount of python code. Due to time constraints we avoid this by precomputing the SuperPoint keypoints and descriptors using Python code, storing the results, and importing the results when needed in C++.
 
 The script `utils/generate_keypts_and_desc.py` is provided to apply a SuperPoint network to an image directory and output the resulting keypoints and descriptors in sequentially named YAML files. See the script's help message for the full details.
 
-An example of how to use this script with the thermal SuperPoint model we trained is as follows:
+An example of how to use this script with the thermal SuperPoint network we trained is as follows:
 ```
-python generate_keypts_and_desc.py ../trained_models/superpoint_thermal/thermal.pth.tar ../../datasets/vivid/outdoor_thermal/images_clahe_10hz_tstart_0_tstop_inf/ features
+python generate_keypts_and_desc.py ../trained_networks/superpoint_thermal/thermal.pth.tar ../../datasets/vivid/outdoor_thermal/images_clahe_10hz_tstart_0_tstop_inf/ features
 ```
-The result is a folder *../../datasets/vivid/outdoor_thermal/features/* containing sequentially named YAML files.
+The result is a folder *../../datasets/vivid/outdoor_thermal/features/* with sequentially named YAML files containing the SuperPoint features.
 
-## Running SuperPoint SLAM
+# 6. Vocabulary Generation
+
+To generate a SuperPoint vocabulary using precomputed SuperPoint keypoints and descriptors run:
+```
+./thirdparty/DBoW2/build/build_superpt_vocab <PATH_TO_SUPERPOINT_FEATURES>
+```
+The result will be a file `superpt_voc.yml.gz`.
+
+Note that a hardcoded kmeans iteration limit of 100 was added [here](https://github.com/specarmi/DBoW2/blob/master/include/DBoW2/TemplatedVocabulary.h#L686). Previously DBoW2 only progressed to the next node once all descriptors remain in the same clusters for two iterations. In our experience, this would frequently not occur and instead the percentage of descriptors switching clusters each iteration would oscillate. Note also that the completion percentage printed during training is only a loose approximation as it uses an upper bound for the number of possible nodes to be processed.
+
+`vocabularies/superpt_thermal.yml.gz` is our thermal SuperPoint vocabulary trained on the [FLIR ADAS dataset](https://www.flir.com/oem/adas/adas-dataset-form/).
+
+# 7. Running SuperPoint SLAM
+
+Our modified version of SuperPoint SLAM runs offline on precomputed keypoints and descriptors. The original SuperPoint SLAM could be run online but utilized the pretrained SuperPoint network provided by the original SuperPoint authors [here](https://github.com/magicleap/SuperPointPretrainedNetwork). The third party implementation we use for training (pytorch-superpoint) employs different layers in the network and our trained networks are incompatible with the original SuperPoint SLAM as a result. As was done in training the vocabulary, our quick fix is to generate keypoints and descriptors offline and import them into SuperPoint SLAM at runtime.  
 
 Assuming the data is in the format described in the ROS Bag Preprocessing section it can be imported using the EuRoC example. The executable can be run with the following arguments:
 ```
@@ -127,7 +144,7 @@ For example:
 ./thirdparty/SuperPoint_SLAM/Examples/Monocular/mono_euroc vocabularies/superpt_thermal.yml.gz configs/ORB_SLAM2/ViViD_Thermal.yaml ../datasets/vivid/outdoor_thermal/images_clahe_10hz_tstart_0_tstop_inf/ ../datasets/vivid/outdoor_thermal/timestamps/timestamps_10hz_tstart_0_tstop_inf.txt ../datasets/vivid/outdoor_thermal/features/
 ```
 
-# 7. Evaluation and Results
+# 8. Evaluation and Results
 **TODO** Write section
 ## Comparing Contrast Enhancement Techniques
 ## Feature Matching 
