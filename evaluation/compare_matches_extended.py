@@ -137,7 +137,7 @@ def main():
     print("Total number of SIFT matches: " + str(len(siftMatches)))
     
     # Draw the matches
-    fig, axes = plt.subplots(4, 1)
+    fig, axes = plt.subplots(1, 4)
     spImgThermal = cv2.drawMatches(img1, spKeyPtsThermal1, img2, spKeyPtsThermal2, spMatchesThermal[:opt.num_matches], None, 
         flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
     axes[0].imshow(spImgThermal)
