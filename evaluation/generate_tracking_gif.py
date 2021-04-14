@@ -286,12 +286,12 @@ if __name__ == "__main__":
     opt = parser.parse_args()
 
     # Load the thermal model
-    print("Loading thermal SuperPoint model...")
+    print("Loading thermal SuperPoint model " + opt.thermal_superpoint_model_path + "...")
     thermal_model, thermal_device = load_model(opt, 'thermal')
     print("Thermal Model loaded.\n")
 
     # Load the RGB model
-    print("Loading RGB SuperPoint model...")
+    print("Loading RGB SuperPoint model " + opt.rgb_superpoint_model_path + "...")
     rgb_model, rgb_device = load_model(opt, 'rgb')
     print("RGB Model loaded.\n")
 
@@ -383,5 +383,5 @@ if __name__ == "__main__":
         # Save the final image
         pil_images.append(Image.fromarray(cv2.cvtColor(final_img, cv2.COLOR_RGB2BGR)))
 
-pil_images[0].save(fp=opt.out_file, format='GIF', append_images=pil_images[1:], save_all=True, 
+pil_images[0].save(fp=opt.out_file + '.gif', format='GIF', append_images=pil_images[1:], save_all=True, 
     duration= (1 / opt.frame_rate) * 1000.0 / opt.speed_multiplier, loop=0)

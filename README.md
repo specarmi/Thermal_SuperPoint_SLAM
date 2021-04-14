@@ -162,7 +162,7 @@ python generate_clahe_gif.py ../../datasets/fcav/cadata_sequence.bag /ubol/image
 
 Feature tracking GIF:
 ```
-python generate_tracking_gif.py ../trained_networks/superpoint_rgb/rgb.pth.tar ../trained_networks/superpoint_thermal/thermal.pth.tar ../../datasets/fcav/uncooled_seq_1/images_clahe_10hz_tstart_90_tstop_110/ tracking 10
+python generate_tracking_gif.py ../trained_networks/superpoint_thermal/thermal.pth.tar ../trained_networks/superpoint_rgb/rgb.pth.tar ../../datasets/fcav/uncooled_seq_1/images_clahe_10hz_tstart_90_tstop_110/ tracking 10
 ```
 ## Vocabulary Image Similarity Scoring
 Image similarity scores using thermal SuperPoint features and the thermal SuperPoint vocabulary:
