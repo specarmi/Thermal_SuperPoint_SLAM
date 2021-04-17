@@ -1,6 +1,6 @@
 # Thermal SuperPoint SLAM
 
-Thermal SuperPoint SLAM is a project completed for ROB 530 at the University of Michigan in the winter 2021 semester. This project aimed to create an indirect SLAM algorithm that can successfully perform on thermal imagery. Specifically, we trained a SuperPoint feature detection and description network on thermal imagery and integrated the network with ORB_SLAM2 in place of the ORB feature detector and descriptor. Our combined algorithm runs offline on precomputed keypoints and descriptors. See our video and report for the details of the process and our results. Although the project was completed with thermal imagery in mind, the steps described here can be followed with any set of images to yield a SuperPoint network and corresponding vocabulary and use them within a modified version of ORB_SLAM2.
+Thermal SuperPoint SLAM is a project completed for ROB 530 at the University of Michigan in the winter 2021 semester. This project aimed to create an indirect SLAM algorithm that can successfully perform on thermal imagery. Specifically, we trained a SuperPoint feature detection and description network on thermal imagery and integrated the network with ORB_SLAM2 in place of the ORB feature detector and descriptor. Our combined algorithm runs offline on precomputed keypoints and descriptors. See our [video](https://youtu.be/TwUVYOlQn44) and [report](https://github.com/specarmi/Thermal_SuperPoint_SLAM/blob/master/ROB_530_Final_Report_Thermal_SuperPoint_SLAM.pdf) for the details of the process and our results. Although the project was completed with thermal imagery in mind, the steps described here can be followed with any set of images to yield a SuperPoint network and corresponding vocabulary and use them within a modified version of ORB_SLAM2.
 
 This project utilizes four existing codebases:
 - SuperPoint Training: https://github.com/eric-yyjau/pytorch-superpoint
@@ -64,7 +64,7 @@ Any of these scripts that do not work with ROS bags can be run using the pytorch
 
 # 2. Image Directory Preprocessing
 
-This section explains how to apply contrast limited adaptive histogram equalization (CLAHE) to an image directory containing 16 bit thermal images. This is a step we took for training our thermal SuperPoint network but it is not necessary for training on RGB images. See our video and report for more details.
+This section explains how to apply contrast limited adaptive histogram equalization (CLAHE) to an image directory containing 16 bit thermal images. This is a step we took for training our thermal SuperPoint network but it is not necessary for training on RGB images. See our [video](https://youtu.be/TwUVYOlQn44) and [report](https://github.com/specarmi/Thermal_SuperPoint_SLAM/blob/master/ROB_530_Final_Report_Thermal_SuperPoint_SLAM.pdf) for more details.
 
 The script `utils/image_directory_preprocessor.py` is provided to apply CLAHE to an image directory and write the results to a new directory. See the script's help message for the full details.
 
@@ -146,7 +146,7 @@ For example:
 
 # 8. Evaluation
 
-This section gives the commands used to generate the results shown in our video and report.
+This section gives the commands used to generate the results shown in our [video](https://youtu.be/TwUVYOlQn44) and [report](https://github.com/specarmi/Thermal_SuperPoint_SLAM/blob/master/ROB_530_Final_Report_Thermal_SuperPoint_SLAM.pdf).
 
 ## Comparing Contrast Enhancement Techniques
 Contrast enhancement comparison figure:
